@@ -476,15 +476,6 @@
       </div>
     </section>
 
-    <!-- 调试信息区域 -->
-    <section class="section">
-      <div class="container">
-        <div style="background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; font-size: 13px; display: none;" id="error-box">
-          <strong>⚠️ 数据加载异常：</strong> <span id="error-msg"></span>
-          <div style="margin-top: 8px; font-size: 12px; color: #b91c1c;">请按 F12 打开浏览器控制台查看详细日志，或检查网络连接。</div>
-        </div>
-      </div>
-    </section>
   </div>
 
   <!-- 优先加载本地数据 -->
@@ -494,11 +485,11 @@
     // Supabase 配置
     const supabaseUrl = 'https://hnjujzzrbpacumgsyzom.supabase.co';
     const supabaseKey = 'sb_publishable_Ijoqn-pQp_dBgudDPXvKYw_HYiOeuzC'; // Anon Key
-    let supabase = null;
+    let sbClient = null;
 
     try {
       if (window.supabase) {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        sbClient = window.supabase.createClient(supabaseUrl, supabaseKey);
       }
     } catch (e) {
       console.warn("Supabase client init failed, will use local data.");
@@ -514,6 +505,16 @@
       }
     }
 
+    window.addEventListener("error", function (event) {
+      const msg = event && event.message ? event.message : "页面脚本发生异常";
+      showError(msg);
+    });
+    window.addEventListener("unhandledrejection", function (event) {
+      const reason = event && event.reason;
+      const msg = reason && reason.message ? reason.message : String(reason || "异步任务异常");
+      showError(msg);
+    });
+
     // 全局状态
     let rawData = [];
     let total = 0;
@@ -522,21 +523,71 @@
     let daily = [];
     let topPosts = [];
     let topAuthors = [];
+    const emergencyFallbackData = [
+      {
+        title: "影刀RPA分享第20260312期|技术文章：基于IMAP协议实现邮件智能分类与重复读取问题解决方案",
+        url: "https://www.yingdao.com/community/detaildiscuss?id=928184990070910976",
+        author: "小可耐教你学影刀RPA【哔哩哔哩同名】",
+        publish_time: "2026-3-12 15:23",
+        views: 51,
+        content_type: "资源分享",
+        sentiment: "积极"
+      },
+      {
+        title: "解决Windows11上影刀捕获桌面软件元素为全屏的一个方法",
+        url: "https://www.yingdao.com/community/detaildiscuss?id=927893956057976832",
+        author: "大宝徐",
+        publish_time: "2026-3-11 20:07",
+        views: 95,
+        content_type: "案例/经验分享",
+        sentiment: "中性"
+      },
+      {
+        title: "影刀RPA分享第20260310|Openclaw接入飞书 企业微信 钉钉",
+        url: "https://www.yingdao.com/community/detaildiscuss?id=927363653056245760",
+        author: "小可耐教你学影刀RPA【哔哩哔哩同名】",
+        publish_time: "2026-3-10 9:00",
+        views: 812,
+        content_type: "教程/使用技巧",
+        sentiment: "中性"
+      },
+      {
+        title: "极客争锋 | 二月获奖名单公告✨",
+        url: "https://www.yingdao.com/community/detaildiscuss?id=927443635988942848",
+        author: "刀刀｜ 技术中心",
+        publish_time: "2026-3-10 14:18",
+        views: 516,
+        content_type: "官方公告/活动",
+        sentiment: "积极"
+      },
+      {
+        title: "影刀社区文章自动评论点赞",
+        url: "https://www.yingdao.com/community/detaildiscuss?id=923827483558981632",
+        author: "helloWorldfather",
+        publish_time: "2026-2-28 14:48",
+        views: 206,
+        content_type: "其他/闲聊",
+        sentiment: "中性"
+      }
+    ];
 
     // 获取数据
     async function fetchData() {
       const statusEl = document.getElementById("kpi-ai-status");
       const sourceEl = document.getElementById("data-source");
       const countEl = document.getElementById("data-count");
-      statusEl.textContent = "加载中...";
+      if (statusEl) statusEl.textContent = "加载中...";
+      const localFallback = Array.isArray(window.localData) && window.localData.length > 0
+        ? window.localData
+        : emergencyFallbackData;
 
       // 1. 尝试从数据库加载
       let dbData = [];
       let dbError = null;
 
-      if (supabase) {
+      if (sbClient) {
         try {
-          const { data, error } = await supabase
+          const { data, error } = await sbClient
             .from('影刀社区帖子')
             .select('*')
             .limit(500);
@@ -558,9 +609,8 @@
         if (sourceEl) sourceEl.textContent = "数据源：数据库";
       } else {
         console.log("Using Local Data Backup");
-        // 尝试从 localData 获取
-        if (typeof localData !== 'undefined' && localData.length > 0) {
-           rawData = localData;
+        if (localFallback.length > 0) {
+           rawData = localFallback;
            let msg = "⚠️ 正在使用本地 Excel 数据展示";
            if (dbError) {
              msg += `（数据库错误: ${dbError.message || dbError.code}）`;
@@ -568,14 +618,16 @@
              msg += "（数据库无数据）";
            }
            showError(msg);
-           if (sourceEl) sourceEl.textContent = "数据源：本地Excel";
+           if (sourceEl) sourceEl.textContent = Array.isArray(window.localData) && window.localData.length > 0
+             ? "数据源：本地Excel"
+             : "数据源：内置兜底";
         } else {
            let errMsg = "❌ 无法加载数据：";
            if (dbError) errMsg += `数据库报错 (${dbError.message})`;
            else errMsg += "数据库为空";
            errMsg += " 且未找到本地 dashboard_data.js";
            showError(errMsg);
-           statusEl.textContent = "无数据";
+           if (statusEl) statusEl.textContent = "无数据";
            if (sourceEl) sourceEl.textContent = "数据源：-";
            if (countEl) countEl.textContent = "记录数：0";
            return;
@@ -583,14 +635,14 @@
       }
 
       if (rawData.length === 0) {
-        statusEl.textContent = "无数据";
+        if (statusEl) statusEl.textContent = "无数据";
         if (countEl) countEl.textContent = "记录数：0";
         return;
       }
 
       processData(rawData);
       renderAll();
-      statusEl.textContent = "已就绪";
+      if (statusEl) statusEl.textContent = "已就绪";
       if (countEl) countEl.textContent = `记录数：${rawData.length}`;
     }
 
@@ -758,9 +810,12 @@
       });
     }
 
-    document.getElementById("type-filter").addEventListener("change", (e) => {
-      renderTopPosts(e.target.value);
-    });
+    const typeFilterEl = document.getElementById("type-filter");
+    if (typeFilterEl) {
+      typeFilterEl.addEventListener("change", (e) => {
+        renderTopPosts(e.target.value);
+      });
+    }
 
     // 渲染条形图
     const renderBars = (containerId, list, color) => {
@@ -886,6 +941,57 @@
         .map(v => String(v));
     };
 
+    async function postAnalyze(endpoint, headers, body) {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
+      const rawText = await res.text();
+      let payload = null;
+      if (rawText) {
+        try {
+          payload = JSON.parse(rawText);
+        } catch (e) {
+          payload = null;
+        }
+      }
+      return { res, payload, rawText };
+    }
+
+    async function invokeAnalyzeApi(body, headers) {
+      const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      const endpoints = isLocal
+        ? ["/api/analyze", "/.netlify/functions/analyze"]
+        : ["/api/analyze", "/.netlify/functions/analyze"];
+      let lastError = "";
+
+      for (const endpoint of endpoints) {
+        try {
+          const { res, payload, rawText } = await postAnalyze(endpoint, headers, body);
+          if (!res.ok) {
+            if (isLocal && res.status === 501) {
+              return { ok: false, errorCode: "local_static_server", error: "本地静态服务器不支持POST函数调用" };
+            }
+            const apiError = payload && payload.error ? payload.error : "";
+            const textHint = rawText ? rawText.slice(0, 120) : "";
+            lastError = apiError || `HTTP ${res.status} ${textHint}`;
+            continue;
+          }
+          if (!payload || typeof payload !== "object") {
+            const textHint = rawText ? rawText.slice(0, 120) : "";
+            lastError = `接口返回非JSON：${textHint}`;
+            continue;
+          }
+          return { ok: true, data: payload };
+        } catch (e) {
+          lastError = e && e.message ? e.message : "网络异常";
+        }
+      }
+
+      return { ok: false, errorCode: "invoke_failed", error: lastError || "调用失败" };
+    }
+
     const invokeAnalyze = async (mode, resultId) => {
       const resultEl = document.getElementById(resultId);
       if (!resultEl) return;
@@ -898,39 +1004,27 @@
       document.getElementById("kpi-ai-status").textContent = "分析中";
       resultEl.textContent = "分析中...";
 
-      const analyzeApi = "/api/analyze";
-      const analyzeKey = "";
+      const analyzeKey = (window.ANALYZE_KEY || localStorage.getItem("NETLIFY_ANALYZE_KEY") || "").trim();
       const headers = { "Content-Type": "application/json" };
       if (analyzeKey) headers["x-analyze-key"] = analyzeKey;
+      const invokeRes = await invokeAnalyzeApi({
+        mode,
+        post_ids: ids,
+        only_missing: true,
+        limit: 200
+      }, headers);
 
-      let data = null;
-      let errorMessage = "";
-      try {
-        const res = await fetch(analyzeApi, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            mode,
-            post_ids: ids,
-            only_missing: true,
-            limit: 200
-          })
-        });
-        const payload = await res.json();
-        if (!res.ok) {
-          errorMessage = payload && payload.error ? payload.error : `HTTP ${res.status}`;
-        } else {
-          data = payload;
-        }
-      } catch (e) {
-        errorMessage = e && e.message ? e.message : "网络异常";
-      }
-
-      if (errorMessage) {
-        resultEl.textContent = `调用失败：${errorMessage}`;
+      if (!invokeRes.ok) {
+        const msg = invokeRes.errorCode === "local_static_server"
+          ? "调用失败：当前是 python 静态服务，不支持 /api POST。请使用 Netlify 线上页面测试，或改用 netlify dev 本地启动函数。"
+          : invokeRes.error === "invalid_analyze_key"
+          ? "调用失败：缺少或错误的分析密钥，请在浏览器控制台执行 localStorage.setItem('NETLIFY_ANALYZE_KEY','你的密钥') 后重试"
+          : `调用失败：${invokeRes.error}`;
+        resultEl.textContent = msg;
         document.getElementById("kpi-ai-status").textContent = "失败";
         return;
       }
+      const data = invokeRes.data;
 
       const updated = data && data.updated != null ? data.updated : 0;
       const processed = data && data.processed != null ? data.processed : 0;
@@ -943,16 +1037,24 @@
       renderPie("sent-pie", "sent-legend", sentCounts);
     };
 
-    document.getElementById("type-ai-btn").addEventListener("click", () => {
-      invokeAnalyze("content", "type-ai-result");
-    });
+    const typeAiBtnEl = document.getElementById("type-ai-btn");
+    if (typeAiBtnEl) {
+      typeAiBtnEl.addEventListener("click", () => {
+        invokeAnalyze("content", "type-ai-result");
+      });
+    }
 
-    document.getElementById("sent-ai-btn").addEventListener("click", () => {
-      invokeAnalyze("sentiment", "sent-ai-result");
-    });
+    const sentAiBtnEl = document.getElementById("sent-ai-btn");
+    if (sentAiBtnEl) {
+      sentAiBtnEl.addEventListener("click", () => {
+        invokeAnalyze("sentiment", "sent-ai-result");
+      });
+    }
 
     // 初始化加载
-    fetchData();
+    fetchData().catch((err) => {
+      showError(err && err.message ? err.message : "初始化加载失败");
+    });
 
   </script>
 </body>
