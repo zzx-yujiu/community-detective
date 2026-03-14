@@ -1007,30 +1007,62 @@
       const analyzeKey = (window.ANALYZE_KEY || localStorage.getItem("NETLIFY_ANALYZE_KEY") || "").trim();
       const headers = { "Content-Type": "application/json" };
       if (analyzeKey) headers["x-analyze-key"] = analyzeKey;
-      const invokeRes = await invokeAnalyzeApi({
-        mode,
-        post_ids: ids,
-        only_missing: true,
-        limit: 200
-      }, headers);
+      const batchSize = 8;
+      let totalProcessed = 0;
+      let totalUpdated = 0;
+      let totalFailed = 0;
+      const errors = [];
 
-      if (!invokeRes.ok) {
-        const msg = invokeRes.errorCode === "local_static_server"
-          ? "调用失败：当前是 python 静态服务，不支持 /api POST。请使用 Netlify 线上页面测试，或改用 netlify dev 本地启动函数。"
-          : invokeRes.error === "invalid_analyze_key"
-          ? "调用失败：缺少或错误的分析密钥，请在浏览器控制台执行 localStorage.setItem('NETLIFY_ANALYZE_KEY','你的密钥') 后重试"
-          : `调用失败：${invokeRes.error}`;
-        resultEl.textContent = msg;
+      const runOneBatch = async (batchIds) => {
+        const res = await invokeAnalyzeApi({
+          mode,
+          post_ids: batchIds,
+          only_missing: true,
+          limit: batchIds.length
+        }, headers);
+        if (res.ok) {
+          const data = res.data || {};
+          totalProcessed += data.processed != null ? Number(data.processed) : 0;
+          totalUpdated += data.updated != null ? Number(data.updated) : 0;
+          totalFailed += data.failed_count != null ? Number(data.failed_count) : 0;
+          return true;
+        }
+        if (res.errorCode === "local_static_server") {
+          errors.push("当前是 python 静态服务，不支持 /api POST。请使用 Netlify 线上页面测试，或改用 netlify dev 本地启动函数。");
+          return false;
+        }
+        if (res.error === "invalid_analyze_key") {
+          errors.push("缺少或错误的分析密钥，请在浏览器控制台执行 localStorage.setItem('NETLIFY_ANALYZE_KEY','你的密钥') 后重试。");
+          return false;
+        }
+        errors.push(res.error || "调用失败");
+        return false;
+      };
+
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batchIds = ids.slice(i, i + batchSize);
+        resultEl.textContent = `分析中... ${Math.min(i + batchIds.length, ids.length)}/${ids.length}`;
+        const ok = await runOneBatch(batchIds);
+        if (!ok) {
+          const lastError = errors[errors.length - 1] || "";
+          if (lastError.indexOf("504") >= 0 && batchIds.length > 1) {
+            for (const singleId of batchIds) {
+              await runOneBatch([singleId]);
+            }
+          }
+        }
+      }
+
+      if (totalProcessed > 0 || totalUpdated > 0) {
+        const warn = errors.length > 0 ? `；部分失败${errors.length}` : "";
+        resultEl.textContent = `完成：处理${totalProcessed}，更新${totalUpdated}，失败${totalFailed}${warn}`;
+        document.getElementById("kpi-ai-status").textContent = errors.length > 0 ? "部分完成" : "已完成";
+      } else {
+        const firstError = errors[0] || "调用失败";
+        resultEl.textContent = `调用失败：${firstError}`;
         document.getElementById("kpi-ai-status").textContent = "失败";
         return;
       }
-      const data = invokeRes.data;
-
-      const updated = data && data.updated != null ? data.updated : 0;
-      const processed = data && data.processed != null ? data.processed : 0;
-      const failed = data && data.failed_count != null ? data.failed_count : 0;
-      resultEl.textContent = `完成：处理${processed}，更新${updated}，失败${failed}`;
-      document.getElementById("kpi-ai-status").textContent = "已完成";
 
       await fetchData();
       renderPie("type-pie", "type-legend", typeCounts);
