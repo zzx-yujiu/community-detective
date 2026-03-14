@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>社区侦探效果展示</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --block: #f3f4f6;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Outfit", "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    }
+    .page { display: grid; gap: 0; }
+    .section { padding: 40px 32px; position: relative; overflow: hidden; }
+    .section-muted { background: var(--block); }
+    .section-primary { background: var(--primary); color: #ffffff; }
+    .section-accent { background: #ecfeff; }
+    .container { max-width: 1200px; margin: 0 auto; display: grid; gap: 20px; position: relative; z-index: 1; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .hero { display: grid; gap: 18px; }
+    .hero h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+    .hero p { margin: 0; font-size: 16px; opacity: 0.9; }
+    .hero-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .tag { background: rgba(255, 255, 255, 0.2); padding: 6px 10px; border-radius: 999px; }
+    .card { background: #ffffff; border-radius: 12px; padding: 20px; transition: transform 0.2s; }
+    .card:hover { transform: scale(1.02); }
+    .card-muted { background: #fef3c7; }
+    .card-secondary { background: #ecfdf5; }
+    .card-primary { background: #dbeafe; }
+    .kpi-title { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .kpi-value { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    .kpi-sub { color: var(--muted); font-size: 13px; }
+    .section-title { font-size: 18px; margin: 0 0 12px 0; font-weight: 700; letter-spacing: -0.01em; }
+    .pie-wrap { display: grid; grid-template-columns: 220px 1fr; gap: 16px; align-items: center; }
+    .pie-legend { display: grid; gap: 10px; font-size: 13px; }
+    .pie-item { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; }
+    .pie-dot { width: 12px; height: 12px; border-radius: 4px; background: var(--primary); }
+    .bar-list { display: grid; gap: 10px; }
+    .bar-row { display: grid; grid-template-columns: 150px 1fr 60px; gap: 10px; align-items: center; font-size: 13px; }
+    .bar-track { background: #ffffff; border-radius: 8px; height: 12px; overflow: hidden; }
+    .bar-fill { height: 12px; border-radius: 8px; }
+    .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .table th, .table td { padding: 12px 10px; border-bottom: 2px solid var(--border); text-align: left; vertical-align: top; }
+    .table th { color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 11px; background: var(--block); color: var(--text); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+    .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+    select { background: var(--block); color: var(--text); border: 2px solid transparent; border-radius: 8px; padding: 8px 12px; font-size: 13px; transition: transform 0.2s, background 0.2s, border-color 0.2s; }
+    select:focus { outline: none; border-color: var(--primary); background: #ffffff; }
+    .line-wrap { width: 100%; height: 220px; background: #ffffff; border-radius: 10px; padding: 10px; }
+    .legend { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .bg-shape { position: absolute; opacity: 0.08; pointer-events: none; }
+    .bg-circle { width: 240px; height: 240px; border-radius: 999px; background: #ffffff; top: -60px; right: -60px; }
+    .bg-square { width: 180px; height: 180px; background: #111827; transform: rotate(20deg); bottom: -70px; left: -40px; }
+    .bg-amber { width: 260px; height: 260px; border-radius: 999px; background: var(--accent); bottom: -120px; right: -80px; opacity: 0.1; }
+    @media (max-width: 1100px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 110px 1fr 50px; }
+      .pie-wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="section section-primary">
+      <div class="bg-shape bg-circle"></div>
+      <div class="bg-shape bg-square"></div>
+      <div class="container hero">
+        <div class="hero-meta">
+          <span class="tag">社区侦探</span>
+          <span class="tag">效果展示</span>
+          <span class="tag">本地数据</span>
+        </div>
+        <h1>社区内容侦探数据看板（效果展示）</h1>
+        <p>基于本地 Excel 数据生成的展示版本。</p>
+      </div>
+    </section>
+
+    <section class="section section-muted">
+      <div class="container grid-3">
+        <div class="card card-primary">
+          <div class="kpi-title">帖子总量</div>
+          <div class="kpi-value" id="kpi-total">-</div>
+          <div class="kpi-sub" id="kpi-range">-</div>
+        </div>
+        <div class="card card-secondary">
+          <div class="kpi-title">活跃高峰</div>
+          <div class="kpi-value" id="kpi-peak-date">-</div>
+          <div class="kpi-sub" id="kpi-peak-count">-</div>
+        </div>
+        <div class="card card-muted">
+          <div class="kpi-title">数据来源</div>
+          <div class="kpi-value">Excel</div>
+          <div class="kpi-sub">社区侦探项目-AI打标.xlsx</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-accent">
+      <div class="bg-shape bg-amber"></div>
+      <div class="container">
+        <div class="card">
+          <h3 class="section-title">发布趋势（按日）</h3>
+          <div class="line-wrap">
+            <svg id="trend-line" width="100%" height="100%" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="legend" id="trend-legend">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-muted">
+      <div class="container grid-2">
+        <div class="card">
+          <h3 class="section-title">高热帖子 Top 10</h3>
+          <div class="controls">
+            <span class="pill">按类型筛选</span>
+            <select id="type-filter"></select>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>标题</th>
+                <th>浏览量</th>
+                <th>类型</th>
+              </tr>
+            </thead>
+            <tbody id="top-posts"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3 class="section-title">作者贡献度 Top 8</h3>
+          <div class="bar-list" id="author-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid-2">
+        <div class="card">
+          <h3 class="section-title">内容类型分布</h3>
+          <div class="pie-wrap">
+            <svg id="type-pie" width="220" height="220" viewBox="0 0 220 220" aria-label="内容类型占比"></svg>
+            <div class="pie-legend" id="type-legend"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">情感分布</h3>
+          <div class="pie-wrap">
+            <svg id="sent-pie" width="220" height="220" viewBox="0 0 220 220" aria-label="情感占比"></svg>
+            <div class="pie-legend" id="sent-legend"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const data = {"total": 200, "type_counts": {"教程/使用技巧": 100, "案例/经验分享": 21, "其他/闲聊": 20, "资源分享": 15, "问答/求助": 14, "BUG/问题反馈": 10, "未分类": 6, "官方公告/活动": 5, "更新日志/版本发布": 3, "功能需求/建议": 3, "教程": 2, "招聘/求职": 1}, "sent_counts": {"中性": 125, "积极": 44, "消极": 25, "未分类": 6}, "top_posts": [{"title": "不会写XPath？过客大佬直播教你如何“作弊”——一招搞定让你抓狂的网页元素！", "views": 3167, "type": "官方公告/活动"}, {"title": "claude-v3.7和 claude-v3.5部分模型下架通知", "views": 1519, "type": "官方公告/活动"}, {"title": "极客争锋 | 一月获奖名单公告✨", "views": 1509, "type": "官方公告/活动"}, {"title": "影刀RPA分享第20260310|Openclaw接入飞书 企业微信 钉钉", "views": 812, "type": "教程/使用技巧"}, {"title": "关于修复 Edge 浏览器更新后下载功能异常的修复通知", "views": 638, "type": "官方公告/活动"}, {"title": "OpenClaw也能操作网页了，影刀RPA有危机感了吗？", "views": 590, "type": NaN}, {"title": "OpenClaw安装：", "views": 580, "type": "教程/使用技巧"}, {"title": "极客争锋 | 二月获奖名单公告✨", "views": 516, "type": "官方公告/活动"}, {"title": "做了个自动抓淘宝评论、问大家、获取sku规格的chrome插件，要的自取", "views": 428, "type": "资源分享"}, {"title": "紫鸟浏览器", "views": 420, "type": "教程/使用技巧"}], "daily": [{"date": "2026-02-04", "count": 1}, {"date": "2026-02-05", "count": 14}, {"date": "2026-02-06", "count": 8}, {"date": "2026-02-07", "count": 3}, {"date": "2026-02-08", "count": 1}, {"date": "2026-02-09", "count": 10}, {"date": "2026-02-10", "count": 8}, {"date": "2026-02-11", "count": 7}, {"date": "2026-02-12", "count": 4}, {"date": "2026-02-13", "count": 2}, {"date": "2026-02-14", "count": 6}, {"date": "2026-02-15", "count": 1}, {"date": "2026-02-17", "count": 1}, {"date": "2026-02-20", "count": 1}, {"date": "2026-02-21", "count": 2}, {"date": "2026-02-22", "count": 2}, {"date": "2026-02-24", "count": 6}, {"date": "2026-02-25", "count": 19}, {"date": "2026-02-26", "count": 8}, {"date": "2026-02-27", "count": 10}, {"date": "2026-02-28", "count": 8}, {"date": "2026-03-01", "count": 8}, {"date": "2026-03-02", "count": 12}, {"date": "2026-03-03", "count": 10}, {"date": "2026-03-04", "count": 4}, {"date": "2026-03-05", "count": 9}, {"date": "2026-03-06", "count": 4}, {"date": "2026-03-07", "count": 1}, {"date": "2026-03-08", "count": 3}, {"date": "2026-03-09", "count": 8}, {"date": "2026-03-10", "count": 10}, {"date": "2026-03-11", "count": 6}, {"date": "2026-03-12", "count": 3}], "top_authors": [{"name": "小可耐教你学影刀RPA【哔哩哔哩同名】", "value": 35}, {"name": "rary", "value": 7}, {"name": "CESC_4", "value": 6}, {"name": "FuntownElf", "value": 5}, {"name": "皮凯", "value": 4}, {"name": "凌夜曦", "value": 4}, {"name": "秦庆川", "value": 4}, {"name": "苏钮", "value": 4}]};
+
+    const total = data.total;
+    let typeCounts = [];
+    let sentCounts = [];
+    const daily = data.daily || [];
+    const topPosts = data.top_posts || [];
+    const topAuthors = data.top_authors || [];
+
+    document.getElementById("kpi-total").textContent = total.toLocaleString();
+    const rangeSpan = document.getElementById("kpi-range");
+    if (daily.length > 0) {
+      rangeSpan.textContent = `${daily[0].date} 至 ${daily[daily.length - 1].date}`;
+    }
+
+    typeCounts = Object.entries(data.type_counts || {});
+    sentCounts = Object.entries(data.sent_counts || {});
+
+    const renderBars = (containerId, list, color) => {
+      const container = document.getElementById(containerId);
+      const max = Math.max(...list.map(([, v]) => v), 1);
+      container.innerHTML = "";
+      list.forEach(([name, value]) => {
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        const label = document.createElement("div");
+        label.textContent = name || "未分类";
+        const track = document.createElement("div");
+        track.className = "bar-track";
+        const fill = document.createElement("div");
+        fill.className = "bar-fill";
+        fill.style.width = `${(value / max) * 100}%`;
+        fill.style.background = color;
+        track.appendChild(fill);
+        const count = document.createElement("div");
+        count.textContent = value;
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(count);
+        container.appendChild(row);
+      });
+    };
+
+    const pieColors = ["#3b82f6", "#10b981", "#f59e0b", "#111827", "#6366f1", "#ef4444", "#14b8a6", "#a855f7", "#f97316", "#0ea5e9", "#84cc16"];
+    const renderPie = (svgId, legendId, list) => {
+      const svg = document.getElementById(svgId);
+      const legend = document.getElementById(legendId);
+      svg.innerHTML = "";
+      legend.innerHTML = "";
+      const totalValue = list.reduce((sum, [, v]) => sum + v, 0);
+      const cx = 110;
+      const cy = 110;
+      const r = 90;
+      let startAngle = -Math.PI / 2;
+      if (!totalValue) {
+        const empty = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        empty.setAttribute("cx", cx);
+        empty.setAttribute("cy", cy);
+        empty.setAttribute("r", r);
+        empty.setAttribute("fill", "#e5e7eb");
+        svg.appendChild(empty);
+        return;
+      }
+      list.forEach(([name, value], index) => {
+        const angle = (value / totalValue) * Math.PI * 2;
+        const endAngle = startAngle + angle;
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const largeArc = angle > Math.PI ? 1 : 0;
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+        path.setAttribute("d", d);
+        path.setAttribute("fill", pieColors[index % pieColors.length]);
+        svg.appendChild(path);
+        const item = document.createElement("div");
+        item.className = "pie-item";
+        const dot = document.createElement("span");
+        dot.className = "pie-dot";
+        dot.style.background = pieColors[index % pieColors.length];
+        const label = document.createElement("div");
+        label.textContent = name || "未分类";
+        const percent = document.createElement("div");
+        percent.textContent = `${((value / totalValue) * 100).toFixed(1)}%`;
+        item.appendChild(dot);
+        item.appendChild(label);
+        item.appendChild(percent);
+        legend.appendChild(item);
+        startAngle = endAngle;
+      });
+    };
+
+    renderPie("type-pie", "type-legend", typeCounts);
+    renderPie("sent-pie", "sent-legend", sentCounts);
+    renderBars("author-bars", topAuthors.map(a => [a.name, a.value]), "#f59e0b");
+
+    const svg = document.getElementById("trend-line");
+    const width = 1000;
+    const height = 200;
+    const maxCount = Math.max(...daily.map(d => d.count), 1);
+    const points = daily.map((d, i) => {
+      const x = (i / Math.max(daily.length - 1, 1)) * width;
+      const y = height - (d.count / maxCount) * (height - 20) - 10;
+      return `${x},${y}`;
+    }).join(" ");
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    polyline.setAttribute("fill", "none");
+    polyline.setAttribute("stroke", "#3b82f6");
+    polyline.setAttribute("stroke-width", "4");
+    polyline.setAttribute("points", points);
+    svg.appendChild(polyline);
+    const area = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    area.setAttribute("fill", "rgba(59,130,246,0.2)");
+    area.setAttribute("points", `${points} ${width},${height} 0,${height}`);
+    svg.appendChild(area);
+
+    const trendLegend = document.getElementById("trend-legend");
+    if (daily.length > 0) {
+      const peak = daily.reduce((a, b) => (a.count > b.count ? a : b));
+      trendLegend.textContent = `最高日 ${peak.date}（${peak.count}）`;
+      document.getElementById("kpi-peak-date").textContent = peak.date;
+      document.getElementById("kpi-peak-count").textContent = `${peak.count} 条`;
+    }
+
+    const typeFilter = document.getElementById("type-filter");
+    const uniqueTypes = ["全部"].concat([...new Set(topPosts.map(p => p.type || "未分类"))]);
+    uniqueTypes.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      typeFilter.appendChild(opt);
+    });
+
+    const renderTopPosts = (filterType) => {
+      const tbody = document.getElementById("top-posts");
+      tbody.innerHTML = "";
+      const list = topPosts.filter(p => filterType === "全部" ? true : (p.type || "未分类") === filterType);
+      list.forEach(p => {
+        const tr = document.createElement("tr");
+        const td1 = document.createElement("td");
+        td1.textContent = p.title;
+        const td2 = document.createElement("td");
+        td2.textContent = p.views?.toLocaleString() ?? "-";
+        const td3 = document.createElement("td");
+        td3.textContent = p.type || "未分类";
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tbody.appendChild(tr);
+      });
+    };
+
+    typeFilter.addEventListener("change", () => {
+      renderTopPosts(typeFilter.value);
+    });
+    renderTopPosts("全部");
+  </script>
+</body>
+</html>

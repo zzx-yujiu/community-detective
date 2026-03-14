@@ -1,0 +1,36 @@
+﻿[
+  {
+    "name": "content",
+    "status_code": 200,
+    "ok": true,
+    "body": {
+      "data": {
+        "runRecordId": 327030697689091,
+        "status": "success",
+        "result": {
+          "output_text_0": "案例/经验分享"
+        }
+      },
+      "code": 200,
+      "success": true,
+      "requestId": "3c0c649e-ee76-45f0-9f57-72d4f7bfee4f"
+    }
+  },
+  {
+    "name": "sentiment",
+    "status_code": 200,
+    "ok": true,
+    "body": {
+      "data": {
+        "runRecordId": 327030704046081,
+        "status": "success",
+        "result": {
+          "output_text_0": "积极"
+        }
+      },
+      "code": 200,
+      "success": true,
+      "requestId": "42805aaf-9c67-4747-a352-09135307e72d"
+    }
+  }
+]

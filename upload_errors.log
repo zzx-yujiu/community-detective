@@ -1,0 +1,22 @@
+警告：Excel缺少列：['内容类型', '情感标签']
+批量上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第2行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第3行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第4行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第5行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第6行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第7行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第8行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第9行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第10行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第11行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第12行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第13行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第14行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第15行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第16行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第17行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第18行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第19行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第20行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}
+第21行上传失败: 400 {"code":"PGRST204","details":null,"hint":null,"message":"Could not find the 'content_type' column of '影刀社区帖子' in the schema cache"}

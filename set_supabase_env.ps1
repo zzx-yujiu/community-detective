@@ -1,0 +1,2 @@
+$env:SUPABASE_URL="https://hnjujzzrbpacumgsyzom.supabase.co"
+$env:SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhuanVqenpyYnBhY3VtZ3N5em9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MDQxMTAsImV4cCI6MjA4ODk4MDExMH0.550LBPzcp0ZwdwyZ5ewCsWuUvJXO66AH4Rlas0zly30"

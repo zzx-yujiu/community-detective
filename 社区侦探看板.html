@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>社区侦探数据看板</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap");
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #3b82f6;
+      --secondary: #10b981;
+      --accent: #f59e0b;
+      --block: #f3f4f6;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Outfit", "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    }
+    .page {
+      display: grid;
+      gap: 0;
+    }
+    .section {
+      padding: 40px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-muted {
+      background: var(--block);
+    }
+    .section-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .section-accent {
+      background: #ecfeff;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .hero {
+      display: grid;
+      gap: 18px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .hero p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .tag {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card-muted {
+      background: #fef3c7;
+    }
+    .card-secondary {
+      background: #ecfdf5;
+    }
+    .card-primary {
+      background: #dbeafe;
+    }
+    .kpi-title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .kpi-sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .section-title {
+      font-size: 18px;
+      margin: 0 0 12px 0;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .conclusion-card {
+      display: grid;
+      gap: 8px;
+      padding: 22px;
+      border-radius: 12px;
+      background: #ffffff;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .conclusion-card:hover {
+      transform: scale(1.02);
+      background: #f8fafc;
+    }
+    .conclusion-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .conclusion-text {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .pie-wrap {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    .pie-legend {
+      display: grid;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .pie-item {
+      display: grid;
+      grid-template-columns: 14px 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .pie-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      background: var(--primary);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: scale(1.05);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 4px solid var(--primary);
+    }
+    .btn-outline:hover {
+      background: var(--primary);
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+    .btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--primary);
+    }
+    .ai-panel {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--block);
+      border-radius: 10px;
+    }
+    .ai-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .ai-result {
+      min-height: 56px;
+      font-size: 13px;
+      line-height: 1.6;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--block);
+      color: var(--text);
+    }
+    .bar-list {
+      display: grid;
+      gap: 10px;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 60px;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .bar-track {
+      background: #ffffff;
+      border-radius: 8px;
+      height: 12px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 12px;
+      border-radius: 8px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .table th, .table td {
+      padding: 12px 10px;
+      border-bottom: 2px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .table th { color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: var(--block);
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    select {
+      background: var(--block);
+      color: var(--text);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    }
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+    .line-wrap {
+      width: 100%;
+      height: 220px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .legend {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .bg-shape {
+      position: absolute;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .bg-circle {
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: #ffffff;
+      top: -60px;
+      right: -60px;
+    }
+    .bg-square {
+      width: 180px;
+      height: 180px;
+      background: #111827;
+      transform: rotate(20deg);
+      bottom: -70px;
+      left: -40px;
+    }
+    .bg-amber {
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: var(--accent);
+      bottom: -120px;
+      right: -80px;
+      opacity: 0.1;
+    }
+    @media (max-width: 1100px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 110px 1fr 50px; }
+      .pie-wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="section section-primary">
+      <div class="bg-shape bg-circle"></div>
+      <div class="bg-shape bg-square"></div>
+      <div class="container hero">
+        <div class="hero-meta">
+          <span class="tag">社区侦探</span>
+          <span class="tag">动态洞察</span>
+          <span class="tag">AI驱动</span>
+        </div>
+        <h1>社区内容侦探数据看板</h1>
+        <p>先看趋势与热度，再用AI一键生成内容分类与情感分布。</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:12px; font-weight:600; letter-spacing:0.06em;">
+          <span class="tag" id="data-source">数据源：-</span>
+          <span class="tag" id="data-count">记录数：-</span>
+        </div>
+        <!-- 调试信息区域（置顶显示） -->
+        <div style="background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; font-size: 13px; display: none; margin-top: 10px;" id="error-box">
+          <strong>⚠️ 数据加载异常：</strong> <span id="error-msg"></span>
+          <div style="margin-top: 8px; font-size: 12px; color: #b91c1c;">请按 F12 打开浏览器控制台查看详细日志，或检查网络连接。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-muted">
+      <div class="container grid-3">
+        <div class="card card-primary">
+          <div class="kpi-title">帖子总量</div>
+          <div class="kpi-value" id="kpi-total">-</div>
+          <div class="kpi-sub" id="kpi-range">-</div>
+        </div>
+        <div class="card card-secondary">
+          <div class="kpi-title">活跃高峰</div>
+          <div class="kpi-value" id="kpi-peak-date">-</div>
+          <div class="kpi-sub" id="kpi-peak-count">-</div>
+        </div>
+        <div class="card card-muted">
+          <div class="kpi-title">AI分析状态</div>
+          <div class="kpi-value" id="kpi-ai-status">待分析</div>
+          <div class="kpi-sub">点击下方按钮触发流程</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-accent">
+      <div class="bg-shape bg-amber"></div>
+      <div class="container">
+        <div class="card">
+          <h3 class="section-title">发布趋势（按日）</h3>
+          <div class="line-wrap">
+            <svg id="trend-line" width="100%" height="100%" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="legend" id="trend-legend">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-muted">
+      <div class="container grid-2">
+        <div class="card">
+          <h3 class="section-title">高热帖子 Top 10</h3>
+          <div class="controls">
+            <span class="pill">按类型筛选</span>
+            <select id="type-filter"></select>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>标题</th>
+                <th>浏览量</th>
+                <th>类型</th>
+              </tr>
+            </thead>
+            <tbody id="top-posts"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3 class="section-title">作者贡献度 Top 8</h3>
+          <div class="bar-list" id="author-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid-2">
+        <div class="card">
+          <h3 class="section-title">内容类型分布（AI生成）</h3>
+          <div class="pie-wrap">
+            <svg id="type-pie" width="220" height="220" viewBox="0 0 220 220" aria-label="内容类型占比"></svg>
+            <div class="pie-legend" id="type-legend"></div>
+          </div>
+          <div class="ai-panel">
+            <div class="ai-label">AI分析</div>
+            <button class="btn btn-primary" id="type-ai-btn">运行类型分析</button>
+            <div class="ai-result" id="type-ai-result">点击后批量分析并回传结果</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">情感分布（AI生成）</h3>
+          <div class="pie-wrap">
+            <svg id="sent-pie" width="220" height="220" viewBox="0 0 220 220" aria-label="情感占比"></svg>
+            <div class="pie-legend" id="sent-legend"></div>
+          </div>
+          <div class="ai-panel">
+            <div class="ai-label">AI分析</div>
+            <button class="btn btn-outline" id="sent-ai-btn">运行情感洞察</button>
+            <div class="ai-result" id="sent-ai-result">点击后批量分析并回传结果</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 调试信息区域 -->
+    <section class="section">
+      <div class="container">
+        <div style="background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; padding: 16px; border-radius: 8px; font-size: 13px; display: none;" id="error-box">
+          <strong>⚠️ 数据加载异常：</strong> <span id="error-msg"></span>
+          <div style="margin-top: 8px; font-size: 12px; color: #b91c1c;">请按 F12 打开浏览器控制台查看详细日志，或检查网络连接。</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 优先加载本地数据 -->
+  <script src="./dashboard_data.js"></script>
+  <script src="./supabase.min.js"></script>
+  <script>
+    // Supabase 配置
+    const supabaseUrl = 'https://hnjujzzrbpacumgsyzom.supabase.co';
+    const supabaseKey = 'sb_publishable_Ijoqn-pQp_dBgudDPXvKYw_HYiOeuzC'; // Anon Key
+    let supabase = null;
+
+    try {
+      if (window.supabase) {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+      }
+    } catch (e) {
+      console.warn("Supabase client init failed, will use local data.");
+    }
+
+    // 显示错误信息
+    function showError(msg) {
+      const box = document.getElementById("error-box");
+      const span = document.getElementById("error-msg");
+      if (box && span) {
+        box.style.display = "block";
+        span.textContent = msg;
+      }
+    }
+
+    // 全局状态
+    let rawData = [];
+    let total = 0;
+    let typeCounts = [];
+    let sentCounts = [];
+    let daily = [];
+    let topPosts = [];
+    let topAuthors = [];
+
+    // 获取数据
+    async function fetchData() {
+      const statusEl = document.getElementById("kpi-ai-status");
+      const sourceEl = document.getElementById("data-source");
+      const countEl = document.getElementById("data-count");
+      statusEl.textContent = "加载中...";
+
+      // 1. 尝试从数据库加载
+      let dbData = [];
+      let dbError = null;
+
+      if (supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('影刀社区帖子')
+            .select('*')
+            .limit(500);
+          
+          if (error) {
+            dbError = error;
+          } else if (data && data.length > 0) {
+            dbData = data;
+          }
+        } catch (err) {
+          dbError = err;
+        }
+      }
+
+      // 2. 如果数据库没数据，或者出错，回退使用本地数据
+      if (dbData.length > 0) {
+        console.log("Using Database Data");
+        rawData = dbData;
+        if (sourceEl) sourceEl.textContent = "数据源：数据库";
+      } else {
+        console.log("Using Local Data Backup");
+        // 尝试从 localData 获取
+        if (typeof localData !== 'undefined' && localData.length > 0) {
+           rawData = localData;
+           let msg = "⚠️ 正在使用本地 Excel 数据展示";
+           if (dbError) {
+             msg += `（数据库错误: ${dbError.message || dbError.code}）`;
+           } else {
+             msg += "（数据库无数据）";
+           }
+           showError(msg);
+           if (sourceEl) sourceEl.textContent = "数据源：本地Excel";
+        } else {
+           let errMsg = "❌ 无法加载数据：";
+           if (dbError) errMsg += `数据库报错 (${dbError.message})`;
+           else errMsg += "数据库为空";
+           errMsg += " 且未找到本地 dashboard_data.js";
+           showError(errMsg);
+           statusEl.textContent = "无数据";
+           if (sourceEl) sourceEl.textContent = "数据源：-";
+           if (countEl) countEl.textContent = "记录数：0";
+           return;
+        }
+      }
+
+      if (rawData.length === 0) {
+        statusEl.textContent = "无数据";
+        if (countEl) countEl.textContent = "记录数：0";
+        return;
+      }
+
+      processData(rawData);
+      renderAll();
+      statusEl.textContent = "已就绪";
+      if (countEl) countEl.textContent = `记录数：${rawData.length}`;
+    }
+
+    // 处理数据
+    function processData(data) {
+      total = data.length;
+
+      // 1. 内容类型分布
+      const typeMap = {};
+      data.forEach(item => {
+        const t = item.content_type || "未分类";
+        typeMap[t] = (typeMap[t] || 0) + 1;
+      });
+      typeCounts = Object.entries(typeMap).sort((a, b) => b[1] - a[1]);
+
+      // 2. 情感分布
+      const sentMap = {};
+      data.forEach(item => {
+        const s = item.sentiment || "未分类";
+        sentMap[s] = (sentMap[s] || 0) + 1;
+      });
+      sentCounts = Object.entries(sentMap).sort((a, b) => b[1] - a[1]);
+
+      // 3. 每日趋势
+      const dateMap = {};
+      data.forEach(item => {
+        if (!item.publish_time) return;
+        // 安全地获取日期前10位
+        try {
+          const date = String(item.publish_time).substring(0, 10); 
+          if (date) {
+            dateMap[date] = (dateMap[date] || 0) + 1;
+          }
+        } catch (e) {
+          console.warn("Date parse error:", item.publish_time);
+        }
+      });
+      daily = Object.entries(dateMap)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // 4. 高热帖子 (按浏览量 views)
+      // 注意：这里假设数据库字段名为 'views' 或 'interaction_count'
+      topPosts = [...data]
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .slice(0, 10)
+        .map(item => ({
+          title: item.title,
+          views: item.views || 0,
+          type: item.content_type
+        }));
+
+      // 5. 作者贡献
+      const authorMap = {};
+      data.forEach(item => {
+        const auth = item.author || "未知";
+        authorMap[auth] = (authorMap[auth] || 0) + 1;
+      });
+      topAuthors = Object.entries(authorMap)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
+    }
+
+    // 渲染所有组件
+    function renderAll() {
+      // KPI
+      document.getElementById("kpi-total").textContent = total.toLocaleString();
+      const rangeSpan = document.getElementById("kpi-range");
+      if (daily.length > 0) {
+        rangeSpan.textContent = `${daily[0].date} 至 ${daily[daily.length - 1].date}`;
+      } else {
+        rangeSpan.textContent = "-";
+      }
+
+      // 活跃高峰
+      if (daily.length > 0) {
+        const peak = daily.reduce((a, b) => (a.count > b.count ? a : b));
+        document.getElementById("kpi-peak-date").textContent = peak.date;
+        document.getElementById("kpi-peak-count").textContent = `${peak.count} 条`;
+        document.getElementById("trend-legend").textContent = `最高日 ${peak.date}（${peak.count}）`;
+      } else {
+        document.getElementById("kpi-peak-date").textContent = "-";
+        document.getElementById("kpi-peak-count").textContent = "-";
+      }
+
+      // 趋势图
+      renderTrendLine();
+
+      // Top Posts
+      renderTopPosts("全部");
+      updateTypeFilter();
+
+      // Top Authors
+      renderBars("author-bars", topAuthors.map(a => [a.name, a.value]), "#f59e0b");
+
+      // Pies (Initial render - empty or full depending on preference. 
+      // User wanted "AI Analysis" button to trigger it.
+      // So we render empty first, or just render it directly as the data is already there.
+      // Let's render empty first to simulate the interaction.)
+      renderPie("type-pie", "type-legend", []);
+      renderPie("sent-pie", "sent-legend", []);
+    }
+
+    // 渲染趋势图
+    function renderTrendLine() {
+      const svg = document.getElementById("trend-line");
+      svg.innerHTML = "";
+      if (daily.length === 0) return;
+
+      const width = 1000;
+      const height = 200;
+      const maxCount = Math.max(...daily.map(d => d.count), 1);
+      
+      const points = daily.map((d, i) => {
+        const x = (i / Math.max(daily.length - 1, 1)) * width;
+        const y = height - (d.count / maxCount) * (height - 20) - 10;
+        return `${x},${y}`;
+      }).join(" ");
+
+      const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      polyline.setAttribute("fill", "none");
+      polyline.setAttribute("stroke", "#3b82f6");
+      polyline.setAttribute("stroke-width", "4");
+      polyline.setAttribute("points", points);
+      svg.appendChild(polyline);
+
+      const area = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      area.setAttribute("fill", "rgba(59,130,246,0.2)");
+      area.setAttribute("points", `${points} ${width},${height} 0,${height}`);
+      svg.appendChild(area);
+    }
+
+    // 更新类型过滤器
+    function updateTypeFilter() {
+      const typeFilter = document.getElementById("type-filter");
+      typeFilter.innerHTML = "";
+      const uniqueTypes = ["全部"].concat([...new Set(rawData.map(p => p.content_type || "未分类"))]);
+      uniqueTypes.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        typeFilter.appendChild(opt);
+      });
+    }
+
+    // 渲染 Top Posts
+    function renderTopPosts(filterType) {
+      const tbody = document.getElementById("top-posts");
+      tbody.innerHTML = "";
+      const list = topPosts.filter(p => filterType === "全部" ? true : (p.type || "未分类") === filterType);
+      
+      list.forEach(p => {
+        const tr = document.createElement("tr");
+        const td1 = document.createElement("td");
+        td1.textContent = p.title;
+        const td2 = document.createElement("td");
+        td2.textContent = (p && p.views != null && p.views.toLocaleString) ? p.views.toLocaleString() : "-";
+        const td3 = document.createElement("td");
+        td3.textContent = p.type || "未分类";
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("type-filter").addEventListener("change", (e) => {
+      renderTopPosts(e.target.value);
+    });
+
+    // 渲染条形图
+    const renderBars = (containerId, list, color) => {
+      const container = document.getElementById(containerId);
+      const max = Math.max(...list.map(([, v]) => v), 1);
+      container.innerHTML = "";
+      list.forEach(([name, value]) => {
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        
+        const label = document.createElement("div");
+        label.textContent = name || "未分类";
+        label.style.overflow = "hidden";
+        label.style.textOverflow = "ellipsis";
+        label.style.whiteSpace = "nowrap";
+
+        const track = document.createElement("div");
+        track.className = "bar-track";
+        
+        const fill = document.createElement("div");
+        fill.className = "bar-fill";
+        fill.style.width = `${(value / max) * 100}%`;
+        fill.style.background = color;
+        track.appendChild(fill);
+        
+        const count = document.createElement("div");
+        count.textContent = value;
+        
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(count);
+        container.appendChild(row);
+      });
+    };
+
+    // 渲染饼图
+    const pieColors = ["#3b82f6", "#10b981", "#f59e0b", "#111827", "#6366f1", "#ef4444", "#14b8a6", "#a855f7", "#f97316", "#0ea5e9", "#84cc16"];
+    const renderPie = (svgId, legendId, list) => {
+      const svg = document.getElementById(svgId);
+      const legend = document.getElementById(legendId);
+      svg.innerHTML = "";
+      legend.innerHTML = "";
+      
+      const totalValue = list.reduce((sum, [, v]) => sum + v, 0);
+      const cx = 110;
+      const cy = 110;
+      const r = 90;
+      let startAngle = -Math.PI / 2;
+
+      if (!totalValue) {
+        // Empty state
+        const empty = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        empty.setAttribute("cx", cx);
+        empty.setAttribute("cy", cy);
+        empty.setAttribute("r", r);
+        empty.setAttribute("fill", "#e5e7eb");
+        svg.appendChild(empty);
+        
+        const item = document.createElement("div");
+        item.className = "pie-item";
+        const dot = document.createElement("span");
+        dot.className = "pie-dot";
+        dot.style.background = "#e5e7eb";
+        const label = document.createElement("div");
+        label.textContent = "等待分析";
+        const percent = document.createElement("div");
+        percent.textContent = "0.0%";
+        item.appendChild(dot);
+        item.appendChild(label);
+        item.appendChild(percent);
+        legend.appendChild(item);
+        return;
+      }
+
+      list.forEach(([name, value], index) => {
+        const angle = (value / totalValue) * Math.PI * 2;
+        const endAngle = startAngle + angle;
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        
+        // Ensure largeArc is correct
+        const largeArc = angle > Math.PI ? 1 : 0;
+        
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const d = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+        path.setAttribute("d", d);
+        path.setAttribute("fill", pieColors[index % pieColors.length]);
+        svg.appendChild(path);
+        
+        const item = document.createElement("div");
+        item.className = "pie-item";
+        const dot = document.createElement("span");
+        dot.className = "pie-dot";
+        dot.style.background = pieColors[index % pieColors.length];
+        
+        const label = document.createElement("div");
+        label.textContent = name || "未分类";
+        
+        const percent = document.createElement("div");
+        percent.textContent = `${((value / totalValue) * 100).toFixed(1)}%`;
+        
+        item.appendChild(dot);
+        item.appendChild(label);
+        item.appendChild(percent);
+        legend.appendChild(item);
+        
+        startAngle = endAngle;
+      });
+    };
+
+    const getPostIds = () => {
+      return (rawData || [])
+        .map(r => {
+          if (!r) return null;
+          if (r.post_id != null) return r.post_id;
+          if (r.postId != null) return r.postId;
+          if (r["帖子ID"] != null) return r["帖子ID"];
+          return null;
+        })
+        .filter(v => !!v)
+        .map(v => String(v));
+    };
+
+    const invokeAnalyze = async (mode, resultId) => {
+      const resultEl = document.getElementById(resultId);
+      if (!resultEl) return;
+
+      const ids = getPostIds();
+      if (!ids.length) {
+        resultEl.textContent = "未找到可分析的帖子ID";
+        return;
+      }
+      document.getElementById("kpi-ai-status").textContent = "分析中";
+      resultEl.textContent = "分析中...";
+
+      const analyzeApi = "/api/analyze";
+      const analyzeKey = "";
+      const headers = { "Content-Type": "application/json" };
+      if (analyzeKey) headers["x-analyze-key"] = analyzeKey;
+
+      let data = null;
+      let errorMessage = "";
+      try {
+        const res = await fetch(analyzeApi, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            mode,
+            post_ids: ids,
+            only_missing: true,
+            limit: 200
+          })
+        });
+        const payload = await res.json();
+        if (!res.ok) {
+          errorMessage = payload && payload.error ? payload.error : `HTTP ${res.status}`;
+        } else {
+          data = payload;
+        }
+      } catch (e) {
+        errorMessage = e && e.message ? e.message : "网络异常";
+      }
+
+      if (errorMessage) {
+        resultEl.textContent = `调用失败：${errorMessage}`;
+        document.getElementById("kpi-ai-status").textContent = "失败";
+        return;
+      }
+
+      const updated = data && data.updated != null ? data.updated : 0;
+      const processed = data && data.processed != null ? data.processed : 0;
+      const failed = data && data.failed_count != null ? data.failed_count : 0;
+      resultEl.textContent = `完成：处理${processed}，更新${updated}，失败${failed}`;
+      document.getElementById("kpi-ai-status").textContent = "已完成";
+
+      await fetchData();
+      renderPie("type-pie", "type-legend", typeCounts);
+      renderPie("sent-pie", "sent-legend", sentCounts);
+    };
+
+    document.getElementById("type-ai-btn").addEventListener("click", () => {
+      invokeAnalyze("content", "type-ai-result");
+    });
+
+    document.getElementById("sent-ai-btn").addEventListener("click", () => {
+      invokeAnalyze("sentiment", "sent-ai-result");
+    });
+
+    // 初始化加载
+    fetchData();
+
+  </script>
+</body>
+</html>
